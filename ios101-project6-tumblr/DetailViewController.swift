@@ -5,25 +5,61 @@
 //  Created by Aarya Awasthy on 11/6/25.
 //
 
-import UIKit
 
-class DetailViewController: UIViewController {
+
+import UIKit
+import NukeExtensions
+
+class DetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+
+    @IBOutlet weak var tableView: UITableView!
+    var post: Post!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        title = "Post"
+        navigationController?.navigationBar.prefersLargeTitles = false
+
+        if tableView == nil {
+            fatalError("❌ DetailViewController.tableView outlet is NOT connected.")
+        }
+
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 400
+        tableView.separatorStyle = .none
+
+        DispatchQueue.main.async { [weak self] in
+            self?.tableView.reloadData()
+        }
     }
-    
 
-    /*
-    // MARK: - Navigation
+    // MARK: - UITableViewDataSource
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { 1 }
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell", for: indexPath)
+
+        guard let post = post else {
+            print("❌ post is nil in cellForRowAt — check prepare(for:)")
+            return cell
+        }
+
+        // Image (Tag = 101)
+        if let iv = cell.contentView.viewWithTag(101) as? UIImageView,
+           let url = post.photos.first?.originalSize.url {
+            NukeExtensions.loadImage(with: url, into: iv)
+        }
+
+        // Optional Label (Tag = 102)
+        if let label = cell.contentView.viewWithTag(102) as? UILabel {
+            label.text = post.caption.trimHTMLTags()
+            label.numberOfLines = 0
+        }
+
+        cell.selectionStyle = .none
+        return cell
     }
-    */
-
 }
